@@ -3,13 +3,16 @@
 
 //NOTE: can make constructor so that nothing is initialized
 class Tensor {
-	int width,height,dim;
+
+
 	double *data;
 	std::string name;
 
 	public:
-
-		//User specify a height and width and dimension; Initialize random integers in matrix
+		//pretend its going to be flattened images concatenated by channels
+		int width,height,dim;
+			
+		//User specify a height and width and dimension; Initialize ZEROS in matrix
 		Tensor(int height,int width,int dim,std::string name);
 	
 		//User provides height, width, dimension and data;
