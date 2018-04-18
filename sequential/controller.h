@@ -1,12 +1,12 @@
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include "operation.h"
 #include "tensor.h"
 
 class Controller{
 	std::vector<Operation> ops;
-	std::map<std::string,Tensor> map;
+	std::unordered_map<std::string,Tensor> map;
 
 	Tensor output;
 	public:
