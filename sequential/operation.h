@@ -1,5 +1,6 @@
 //Operation class
 #include <string>
+#include "tensor.h"
 
 class Operation{
 	std::string name;
@@ -19,10 +20,10 @@ class Operation{
 		//number of inputs,
 		//function of this operation,
 		//operation name,
-		//tensor name
-		Operation(Tensor*,int,void*,std::string,std::string);
+		//output tensor name
+		Operation(Tensor* T,int num_inputs,void* f,std::string op_name,std::string out_name);
 
-		void set_tensor(int,Tensor);
+		// void set_tensor(int,Tensor);
 
 		Tensor get_output();
 

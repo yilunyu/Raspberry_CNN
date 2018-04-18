@@ -9,11 +9,11 @@ class Tensor {
 
 	public:
 
-		//User specify a width and height and dimension; Initialize random integers in matrix
-		Tensor(int,int,int,std::string);
+		//User specify a height and width and dimension; Initialize random integers in matrix
+		Tensor(int height,int width,int dim,std::string name);
 	
-		//User provides width, height, dimension and data;
-		Tensor(int,int,int,double*,std::string);
+		//User provides height, width, dimension and data;
+		Tensor(int height,int width,int dim,double* d,std::string name);
 
 		double* get_data();
 

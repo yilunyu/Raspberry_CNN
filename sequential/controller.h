@@ -1,18 +1,21 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "operation.h"
+#include "tensor.h"
+
 class Controller{
 	std::vector<Operation> ops;
 	std::map<std::string,Tensor> map;
 
 	Tensor output;
 	public:
-		Controller(Tensor);
+		Controller(Tensor in);
 		//Controller(Tensor,Operation*,int);
 
-		Tensor get_tensor(std::name);
+		Tensor get_tensor(std::string n);
 
-		void add_op(Operation);
+		void add_op(Operation op);
 
 		//Operation Name, a previously existing tensor name used as input
 		// void add_op(std::string,std::string);
