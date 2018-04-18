@@ -6,7 +6,7 @@ Tensor::Tensor(int h,int w,int dimension,std::string n){
 	height = h;
 	width = w;
 	dim = dimension;
-	name = n;
+	name = n;
 	srand(time(NULL));
 	data = new int[h*w*dimension];
 }
@@ -23,6 +23,6 @@ double* Tensor::get_data(){
 	return data;
 }
 
-std::string Tensor::get_name(){
+std::string Tensor::get_name(){
 	return name;
 }
