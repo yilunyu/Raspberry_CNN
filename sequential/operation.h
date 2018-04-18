@@ -17,11 +17,10 @@ class Operation{
 	Tensor output;
 	public:
 		//input tensors,
-		//number of inputs,
 		//function of this operation,
 		//operation name,
 		//output tensor name
-		Operation(Tensor* T,int num_inputs,void* f,std::string op_name,std::string out_name);
+		Operation(std::vector<Tensor> tens,void* f,std::string op_name,std::string out_name);
 
 		// void set_tensor(int,Tensor);
 
