@@ -2,21 +2,23 @@
 #include <stdlib.h>
 #include <time.h>
 
-Tensor::Tensor(int h,int w,int dimension,std::string n){
+Tensor::Tensor(int h,int w,int dimension,int f, std::string n){
 	height = h;
 	width = w;
 	dim = dimension;
 	name = n;
 	srand(time(NULL));
+	num_filter = f;
 	data = new int[h*w*dimension];
 }
 
-Tensor::Tensor(int h,int w,int dimension,double* d,std::string n){
+Tensor::Tensor(int h,int w,int dimension,int f, double* d,std::string n){
 	height = h;
 	width = w;
 	dim = dimension;
 	data = d;
 	name = n;
+	num_filter = f;
 }
 
 double* Tensor::get_data(){

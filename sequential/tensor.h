@@ -10,13 +10,13 @@ class Tensor {
 
 	public:
 		//pretend its going to be flattened images concatenated by channels
-		int width,height,dim;
+		int width,height,dim,num_filter;
 			
 		//User specify a height and width and dimension; Initialize ZEROS in matrix
-		Tensor(int height,int width,int dim,std::string name);
+		Tensor(int height,int width,int dim,int num_filter,std::string name);
 	
 		//User provides height, width, dimension and data;
-		Tensor(int height,int width,int dim,double* d,std::string name);
+		Tensor(int height,int width,int dim,int num_filter,double* d,std::string name);
 
 		double* get_data();
 
