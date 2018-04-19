@@ -17,9 +17,17 @@ double* Operation::apply_function(){
 	output = t;
 }
 
-int convolve_1d(double* original_start,double* filter_start,int original_width,){
-
+double convolve_1d(double* original_start,double* filter_start,int original_width,int filter_len){
+	double accum=0;
+	for(int i=0;i<filter_len;i++){
+		for(int j=0;j<filter_len;j++){
+			accum+=*(original_start+i*original_width+j)*(*(filter_start+i*filter_len+j));
+		}
+	}
+	return accum;
 }
+
+// Convolution::Convolution
 
 //supports "VALID", kernels are 5x5
 void Convolution::apply_function(){
@@ -33,19 +41,29 @@ void Convolution::apply_function(){
 	double* out_data = output.get_data();
 
 	int filter_start = 0;
-	int w_bound = original.width-5+1;
-	int h_bound = original.height-5+1;
+	int w_bound = original.width-weights.width+1;
+	int h_bound = original.height-weights.height+1;
+	int num_filters = weights.num_filters;
+
 	for(int i=0;i<num_filters;i++){
-		int d_start = 0;
+		for(int j=0;j<h_bound;j++){
+			for(int k=0;k<w_bound;k++){
+				output[i*h_bound*w_bound+j*w_bound+k] = 0.;
+			}
+		}
+	}
+
+	for(int i=0;i<num_filters;i++){
+		int d_ori_start = 0;
 		for(int j=0;j<original.dim;j++){
 			for(int k=0;k<h_bound;k++){
 				for(int l=0;l<w_bound;l++){
-
-
-
+					output[i*h_bound*w_bound+j*w_bound+k]+= convolve_1d(&ori_data[d_ori_start+k*original.width+l],
+						&weight_data[filter_start+j*weights.height*weights.width,original.width,weights.width])
 				}
+				output[i*h_bound*w_bound+j*w_bound+k]+=bias[i]
 			}
-			
+			d_ori_start+=original.width*original.height;
 		}
 		filter_start+=weights.width*weights.height*weights.dim;
 	}
@@ -92,7 +110,7 @@ void FC::apply_function(){
 	double* out_data = output.get_data();
 
 	int weight_start = 0;
-	for(int i=0;i<weights.width;i++){
+	for(int i=0;i<weights.num_filters;i++){
 		double accum=0;
 		for(int j=0;j<original.height*original.width*original.dim;j++){
 			accum+=ori_data[j]*weight_data[j+weight_start];

@@ -23,3 +23,5 @@ class Tensor {
 		std::string get_name();
 		//void serialize_weights()
 };
+
+//subclass for weights
