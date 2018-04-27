@@ -1,3 +1,7 @@
+#ifndef INCLUDE_CONTROLLER
+
+#define INCLUDE_CONTROLLER
+
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -25,3 +29,5 @@ class Controller{
 
 		void forward_pass();
 };
+
+#endif
