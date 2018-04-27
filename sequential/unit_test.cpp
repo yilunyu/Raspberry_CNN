@@ -4,13 +4,74 @@
 #include <assert.h>
 #include <vector>
 #include <new>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 #define DEBUG
 
-#ifdef DEBUG
-
-#endif
+void string_2_doublearr(string line,double* output){
+  stringstream ss (line);
+  int cnt = 0;
+  while(ss.good()){
+    string sub;
+    getline(ss,sub,' ');
+    output[cnt] = atof(sub);
+    cnt++;
+  }   
+}
 
 void test_conv(){
+  ifstream ins("in_conv.txt");
+  ofstream outs("out_conv.txt");
+  string line;
+  std::string name_1 ("inp");
+  double *data_1; //= new double[25];
+  double *w_1;
+  double *dim1 = new double[4];
+  double *dim2 = new double[4];
+  //Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
+  int n_tests = 0;
+  std::string name_1 ("input_1");
+  std::string name_w1 ("w_1");
+  if(ins.is_open() && outs.is_open()){
+    getline(ins,line);
+    n_tests = atoi(line);
+    for(int i =0;i<n_tests;i++){
+      getline(ins,line);
+      string_2_doublearr(line,dim1);
+      getline(ins,line);
+      int data_len = atoi(line);
+      data_1 = new double[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,data_1);
+
+      getline(ins,line);
+      string_2_doublearr(line,dim2);
+      getline(ins,line);
+      data_len = atoi(line);
+      w_1 = new double[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,w_1);
+      
+      Tensor t_1 = Tensor(dim1[0],dim1[1],dim1[2],dim1[3],data_1,name_1);
+      Tensor t_w1 = Tensor(dim2[0],dim2[1],dim2[2],dim2[3],w_1,name_w1);
+      std::vector<Tensor> tens;
+      tens.push_back(t_1);
+      tens.push_back(t_w1);
+      Convolution conv(tens,"conv_1","conv_1_out");
+      conv.apply_function();
+      Tensor conv_out = conv.get_output();
+      double* conv_data = conv_out.get_data();
+      int conv_data_len = conv_out.dim*conv_out.height*conv_out.width*conv_out.num_filter;
+      for(int j=0;j<conv_data_len;j++){
+        cout << conv_data[j];
+      }
+      delete[] data_1;
+      delete[] w_1;
+    }
+  }
+  assert(false)
   std::string name_1 ("n_1");
   double *data_1 = new double[25];
   Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
@@ -50,5 +111,6 @@ void test_conv(){
 }
 
 int main(){
+  test_conv();
   return 0;
 }

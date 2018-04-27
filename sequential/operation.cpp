@@ -30,6 +30,9 @@ double convolve_1d(double* original_start,double* filter_start,int original_widt
 }
 
 // Convolution::Convolution
+Convolution::Convolution(std::vector<Tensor> & tens,
+        std::string op_name,
+        std::string out_name):Operation(tens,op_name,out_name){}
 
 //supports "VALID", kernels are 5x5
 void Convolution::apply_function(){

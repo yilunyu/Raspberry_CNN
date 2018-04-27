@@ -42,7 +42,9 @@ class Operation{
 class Convolution : public Operation
 {
 	public:
-		// Convolution(Tensor in,std::string op_name,std::string out_name);
+		Convolution(std::vector<Tensor> & tens,
+				std::string op_name,
+				std::string out_name);
 		// Convolution(std::vector<Tensor> in,std::string op_name,std::string out_name);
 		void apply_function();
 };
