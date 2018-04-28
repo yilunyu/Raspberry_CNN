@@ -81,15 +81,14 @@ void Convolution::apply_function(){
     for(int j=0;j<original.dim;j++){
       for(int k=0;k<h_bound;k++){
         for(int l=0;l<w_bound;l++){
-          int ans =
+          out_data[i*h_bound*w_bound+k*w_bound+l]+=
           convolve_1d(&ori_data[d_ori_start+k*original.width+l],
                       &weight_data[filter_start+j*weights.height*weights.width],
                      original.width,
                       weights.width);
-          out_data[i*h_bound*w_bound+k*w_bound+l]+= ans;
-          std::cout << k <<' '<<l<<'\n';
-          std::cout<<out_data[i*h_bound*w_bound+k*w_bound+l]<<
-              ' '<<i*h_bound*w_bound+k*w_bound+l<<' '<<ans<<'\n';
+          //std::cout << k <<' '<<l<<'\n';
+          //std::cout<<out_data[i*h_bound*w_bound+k*w_bound+l]<<
+          //    ' '<<i*h_bound*w_bound+k*w_bound+l<<' '<<ans<<'\n';
         }
         //out_data[i*h_bound*w_bound+j*w_bound+k]+=bias_data[i];
       }
@@ -99,6 +98,27 @@ void Convolution::apply_function(){
   }
 
   return;
+}
+
+//input tensor is 1D
+FC::FC(std::vector<Tensor> & tens, int num_output,
+        std::string op_name,
+        std::string out_name):Operation(){
+  name = op_name;
+  inputs = tens;
+  Tensor original = inputs.at(0);
+  int weight_h = original.width;
+  //std::string w_name = op_name;
+  //w_name.append("_w");
+  //Tensor w(num_output,weight_h,1,1,w_name);
+  //std::string b_name = op_name;
+  //w_name.append("_b");
+  //Tensor b(num_output,1,1,1,b_name);
+
+  //initialize b and w
+
+  Tensor t(num_output,1,original.dim,1,out_name);
+  output = t;
 }
 
 void FC::mul(){

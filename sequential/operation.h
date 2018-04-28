@@ -55,6 +55,9 @@ class FC : public Operation
 	public:
 		// FC(Tensor in,std::string op_name,std::string out_name);
 		// FC(std::vector<Tensor> in,std::string op_name,std::string out_name);
+        FC(Tensor tens,int num_output,
+        std::string op_name,
+        std::string out_name);
 		void apply_function();
 		void mul();
 };
