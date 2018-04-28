@@ -1,13 +1,7 @@
 #include "operation.h"
 #include <cmath>
+#include <iostream>
 
-Tensor Operation::get_output(){
-  return output;
-}
-
-double* Operation::apply_function(){
-  return NULL;
-}
 
 Operation::Operation(std::vector<Tensor> & tens,
                       std::string op_name,
@@ -18,6 +12,18 @@ Operation::Operation(std::vector<Tensor> & tens,
   Tensor t(original.height,original.width,original.dim,1,out_name);
   output = t;
 }
+
+Operation::Operation(){
+}
+
+Tensor Operation::get_output(){
+  return output;
+}
+
+double* Operation::apply_function(){
+  return NULL;
+}
+
 
 double convolve_1d(double* original_start,double* filter_start,int original_width,int filter_len){
   double accum=0;
@@ -32,15 +38,27 @@ double convolve_1d(double* original_start,double* filter_start,int original_widt
 // Convolution::Convolution
 Convolution::Convolution(std::vector<Tensor> & tens,
         std::string op_name,
-        std::string out_name):Operation(tens,op_name,out_name){}
+        std::string out_name):Operation(){
+  name = op_name;
+  inputs = tens;
+  Tensor original = inputs.at(0);
+  Tensor weights = inputs.at(1);
+  int w_bound = original.width-weights.width+1;
+  int h_bound = original.height-weights.height+1;
+  Tensor t(h_bound,w_bound,original.dim,1,out_name);
+  output = t;
+}
 
 //supports "VALID", kernels are 5x5
 void Convolution::apply_function(){
-  Tensor bias = inputs.at(2);
+  //std::cout<< "dims "<<num_filters<<' '<<h_bound<<' '<<w_bound<<'\n';
+  //std::cout<< "output "<<output.num_filter<<' '<<output.height<<' '<<output.width<<' '<<output.dim<<'\n';
+
+  //Tensor bias = inputs.at(2);
   Tensor weights = inputs.at(1);
   Tensor original = inputs.at(0);
 
-  double* bias_data = bias.get_data();
+  //double* bias_data = bias.get_data();
   double* ori_data = original.get_data();
   double* weight_data = weights.get_data();
   double* out_data = output.get_data();
@@ -63,18 +81,23 @@ void Convolution::apply_function(){
     for(int j=0;j<original.dim;j++){
       for(int k=0;k<h_bound;k++){
         for(int l=0;l<w_bound;l++){
-          out_data[i*h_bound*w_bound+j*w_bound+k]+=
+          int ans =
           convolve_1d(&ori_data[d_ori_start+k*original.width+l],
                       &weight_data[filter_start+j*weights.height*weights.width],
-                      original.width,
+                     original.width,
                       weights.width);
+          out_data[i*h_bound*w_bound+k*w_bound+l]+= ans;
+          std::cout << k <<' '<<l<<'\n';
+          std::cout<<out_data[i*h_bound*w_bound+k*w_bound+l]<<
+              ' '<<i*h_bound*w_bound+k*w_bound+l<<' '<<ans<<'\n';
         }
-        out_data[i*h_bound*w_bound+j*w_bound+k]+=bias_data[i];
+        //out_data[i*h_bound*w_bound+j*w_bound+k]+=bias_data[i];
       }
       d_ori_start+=original.width*original.height;
     }
     filter_start+=weights.width*weights.height*weights.dim;
   }
+
   return;
 }
 

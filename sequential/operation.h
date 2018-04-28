@@ -3,14 +3,15 @@
 #define INCLUDE_OPERATION
 //Operation class
 #include <string>
-#include "tensor.cpp"
+#include "tensor.h"
 #include <vector>
 #include <iostream>
 
 class Operation{
 
 	public:
-		//input tensors,
+        Operation();
+        //input tensors,
 		//function of this operation,
 		//operation name,
 		//output tensor name
@@ -72,7 +73,7 @@ class Pooling : public Operation
 // 	public:
 // 		// Sigmoid(Tensor in,std::string op_name,std::string out_name);
 // 		Sigmoid(std::vector<Tensor> in,std::string op_name,std::string out_name);
-		
+
 // }
 
 class Relu : public Operation

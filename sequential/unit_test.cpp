@@ -1,6 +1,6 @@
 #include "operation.h"
 #include "tensor.h"
-#include "controller.h"
+//#include "controller.h"
 #include <assert.h>
 #include <vector>
 #include <new>
@@ -10,50 +10,58 @@
 #include <sstream>
 #define DEBUG
 
-void string_2_doublearr(string line,double* output){
-  stringstream ss (line);
+void string_2_intarr(std::string line,int* output){
+  std::stringstream ss (line);
   int cnt = 0;
   while(ss.good()){
-    string sub;
+    std::string sub;
     getline(ss,sub,' ');
-    output[cnt] = atof(sub);
+    output[cnt] = std::stof(sub);
     cnt++;
-  }   
+  }
+}
+void string_2_doublearr(std::string line,double* output){
+  std::stringstream ss (line);
+  int cnt = 0;
+  while(ss.good()){
+    std::string sub;
+    getline(ss,sub,' ');
+    output[cnt] = std::stof(sub);
+    cnt++;
+  }
 }
 
 void test_conv(){
-  ifstream ins("in_conv.txt");
-  ofstream outs("out_conv.txt");
-  string line;
-  std::string name_1 ("inp");
+  std::ifstream ins("in_conv.txt");
+  std::ofstream outs("out_conv.txt");
+  std::string line;
   double *data_1; //= new double[25];
   double *w_1;
-  double *dim1 = new double[4];
-  double *dim2 = new double[4];
+  int *dim1 = new int[4];
+  int *dim2 = new int[4];
   //Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
   int n_tests = 0;
   std::string name_1 ("input_1");
   std::string name_w1 ("w_1");
   if(ins.is_open() && outs.is_open()){
     getline(ins,line);
-    n_tests = atoi(line);
+    n_tests = std::stoi(line);
     for(int i =0;i<n_tests;i++){
       getline(ins,line);
-      string_2_doublearr(line,dim1);
+      string_2_intarr(line,dim1);
       getline(ins,line);
-      int data_len = atoi(line);
+      int data_len = std::stoi(line);
       data_1 = new double[data_len];
       getline(ins,line);
       string_2_doublearr(line,data_1);
 
       getline(ins,line);
-      string_2_doublearr(line,dim2);
+      string_2_intarr(line,dim2);
       getline(ins,line);
-      data_len = atoi(line);
+      data_len = std::stoi(line);
       w_1 = new double[data_len];
       getline(ins,line);
       string_2_doublearr(line,w_1);
-      
       Tensor t_1 = Tensor(dim1[0],dim1[1],dim1[2],dim1[3],data_1,name_1);
       Tensor t_w1 = Tensor(dim2[0],dim2[1],dim2[2],dim2[3],w_1,name_w1);
       std::vector<Tensor> tens;
@@ -63,15 +71,22 @@ void test_conv(){
       conv.apply_function();
       Tensor conv_out = conv.get_output();
       double* conv_data = conv_out.get_data();
+
+
       int conv_data_len = conv_out.dim*conv_out.height*conv_out.width*conv_out.num_filter;
       for(int j=0;j<conv_data_len;j++){
-        cout << conv_data[j];
+          std::cout << conv_data[j] <<' ';
       }
+      std::cout <<'\n';
+
       delete[] data_1;
       delete[] w_1;
+
     }
+
   }
-  assert(false)
+  //assert(false);
+  /*
   std::string name_1 ("n_1");
   double *data_1 = new double[25];
   Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
@@ -84,7 +99,7 @@ void test_conv(){
   std::string name_4 ("n_4");
   double *data_4 = new double[50];
   Tensor in_1 = Tensor(5,5,2,1,data_4,name_4);
-  
+
 
   double *data_w1 = new double[9];
   std::string name_w1 ("n_w1");
@@ -98,8 +113,8 @@ void test_conv(){
   double *data_w4 = new double[9];
   std::string name_w4 ("n_w4");
   Tensor w_4 = Tensor(3,3,2,2,data_w4,name_w4);
-  
-  
+
+
   delete[] data_1;
   delete[] data_w1;
   delete[] data_2;
@@ -107,7 +122,7 @@ void test_conv(){
   delete[] data_3;
   delete[] data_w3;
   delete[] data_4;
-  delete[] data_w4;
+  delete[] data_w4;*/
 }
 
 int main(){
