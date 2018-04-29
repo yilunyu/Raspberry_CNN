@@ -4,6 +4,5 @@
 //#include "controller.h"
 
 int main(){
-  Tensor a();
   return 0;
 }

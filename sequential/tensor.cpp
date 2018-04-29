@@ -23,6 +23,10 @@ Tensor::Tensor(int h,int w,int dimension,int f, double* d,std::string n){
 	num_filter = f;
 }
 
+//Tensor::~Tensor(){
+//	delete[] data;
+//}
+
 double* Tensor::get_data(){
 	return data;
 }

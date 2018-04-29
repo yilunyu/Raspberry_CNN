@@ -20,8 +20,8 @@ Tensor Operation::get_output(){
   return output;
 }
 
-double* Operation::apply_function(){
-  return NULL;
+void Operation::apply_function(){
+  //return NULL;
 }
 
 
@@ -49,7 +49,7 @@ Convolution::Convolution(std::vector<Tensor> & tens,
   output = t;
 }
 
-//supports "VALID", kernels are 5x5
+//supports "VALID", stride is 1
 void Convolution::apply_function(){
   //std::cout<< "dims "<<num_filters<<' '<<h_bound<<' '<<w_bound<<'\n';
   //std::cout<< "output "<<output.num_filter<<' '<<output.height<<' '<<output.width<<' '<<output.dim<<'\n';
@@ -101,13 +101,13 @@ void Convolution::apply_function(){
 }
 
 //input tensor is 1D
-FC::FC(std::vector<Tensor> & tens, int num_output,
+FC::FC(std::vector<Tensor> & tens,
         std::string op_name,
         std::string out_name):Operation(){
   name = op_name;
   inputs = tens;
-  Tensor original = inputs.at(0);
-  int weight_h = original.width;
+  Tensor w = inputs.at(1);
+  int weight_h = w.height;
   //std::string w_name = op_name;
   //w_name.append("_w");
   //Tensor w(num_output,weight_h,1,1,w_name);
@@ -117,7 +117,7 @@ FC::FC(std::vector<Tensor> & tens, int num_output,
 
   //initialize b and w
 
-  Tensor t(num_output,1,original.dim,1,out_name);
+  Tensor t(weight_h,1,1,1,out_name);
   output = t;
 }
 
@@ -161,7 +161,7 @@ void FC::apply_function(){
   double* out_data = output.get_data();
 
   int weight_start = 0;
-  for(int i=0;i<weights.num_filter;i++){
+  for(int i=0;i<weights.width;i++){
     double accum=0;
     for(int j=0;j<original.height*original.width*original.dim;j++){
       accum+=ori_data[j]*weight_data[j+weight_start];
@@ -171,6 +171,18 @@ void FC::apply_function(){
   }
 
   return;
+}
+
+//2 by 2 kernel max pooling
+Pooling::Pooling(std::vector<Tensor> & original,std::string op_name,
+		std::string out_name):Operation(){		
+  name = op_name;
+  inputs = original;
+  Tensor tmp = original.at(0);
+  int w_bound = tmp.width/2;
+  int h_bound = tmp.height/2;
+  Tensor t(h_bound,w_bound,tmp.dim,1,out_name);
+  output = t;
 }
 
 //supports "VALID" right now
@@ -211,6 +223,28 @@ void Pooling::apply_function()
     }
     ori_start+=original.height*original.width;
   }
+}
+
+Flatten::Flatten(std::vector<Tensor> & tens, int num_output,
+        std::string op_name,
+        std::string out_name):Operation(){
+  name = op_name;
+  inputs = tens;
+  Tensor original = inputs.at(0);
+  Tensor t(original.height*original.width*original.dim,1,1,1,out_name);
+  output = t;
+
+}
+
+void Flatten::apply_function()
+{
+  Tensor original = inputs.at(0);
+  double* output_data = output.get_data();
+  double* ori_data = original.get_data();
+  for(int i=0;i<output.width;i++)
+  {
+    output_data[i] = ori_data[i];
+  } 
 }
 
 void Relu::apply_function()

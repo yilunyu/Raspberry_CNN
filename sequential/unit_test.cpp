@@ -125,7 +125,117 @@ void test_conv(){
   delete[] data_w4;*/
 }
 
+void test_full(){
+  std::ifstream ins("in_full.txt");
+  std::ofstream outs("out_full.txt");
+  std::string line;
+  double *data_1; //= new double[25];
+  double *w_1;
+  double *b_1;
+  int *dim_2 = new int[4];
+  //Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
+  int n_tests = 0;
+  std::string name_1 ("input_1");
+  std::string name_w1 ("w_1");
+  std::string name_b1 ("b_1");
+
+  if(ins.is_open() && outs.is_open()){
+    getline(ins,line);
+    n_tests = std::stoi(line);
+    for(int i =0;i<n_tests;i++){
+      getline(ins,line);
+      int data_len = std::stoi(line);
+      data_1 = new double[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,data_1);
+      Tensor t_1 = Tensor(data_len,1,1,1,data_1,name_1);
+
+      getline(ins,line);
+      string_2_intarr(line,dim_2);
+      getline(ins,line);
+      data_len = std::stoi(line);
+      w_1 = new double[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,w_1);
+      Tensor t_w1 = Tensor(dim_2[0],dim_2[1],dim_2[2],dim_2[3],w_1,name_w1);
+      b_1 = new double[dim_2[0]];
+      getline(ins,line);
+      string_2_doublearr(line,b_1);
+      Tensor t_b1 = Tensor(dim_2[0],1,1,1,b_1,name_b1);
+      
+      std::vector<Tensor> tens;
+      tens.push_back(t_1);
+      tens.push_back(t_w1);
+      tens.push_back(t_b1);
+      FC fc(tens,"fc_1","fc_1_out");
+      fc.apply_function();
+      Tensor fc_out = fc.get_output();
+      double* fc_data = fc_out.get_data();
+
+
+      int fc_data_len = fc_out.dim*fc_out.height*fc_out.width*fc_out.num_filter;
+      for(int j=0;j<fc_data_len;j++){
+          std::cout << fc_data[j] <<' ';
+      }
+      std::cout <<'\n';
+
+      delete[] data_1;
+      delete[] w_1;
+      delete[] b_1;
+    }
+
+  }
+
+}
+
+void test_pool(){
+
+  std::ifstream ins("in_pool.txt");
+  std::ofstream outs("out_pool.txt");
+  std::string line;
+  double *data_1; //= new double[25];
+  int *dim_1 = new int[4];
+  //Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
+  int n_tests = 0;
+  std::string name_1 ("input_1");
+
+  if(ins.is_open() && outs.is_open()){
+    getline(ins,line);
+    n_tests = std::stoi(line);
+    for(int i =0;i<n_tests;i++){
+      getline(ins,line);
+      string_2_intarr(line,dim_1);
+      getline(ins,line);
+      int data_len = std::stoi(line);
+      data_1 = new double[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,data_1);
+      Tensor t_1 = Tensor(dim_1[0],dim_1[1],dim_1[2],dim_1[3],data_1,name_1);
+
+      
+      std::vector<Tensor> tens;
+      tens.push_back(t_1);
+      Pooling pooling(tens,"pool_1","pool_1_out");
+      pooling.apply_function();
+      Tensor pooling_out = pooling.get_output();
+      double* pooling_data = pooling_out.get_data();
+
+
+      int pooling_data_len = pooling_out.dim*pooling_out.height*pooling_out.width*pooling_out.num_filter;
+      for(int j=0;j<pooling_data_len;j++){
+          std::cout << pooling_data[j] <<' ';
+      }
+      std::cout <<'\n';
+
+      delete[] data_1;
+
+    }
+
+  }
+}
 int main(){
   test_conv();
+  //test_full();
+  //test_pool();
   return 0;
 }

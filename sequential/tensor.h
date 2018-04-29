@@ -16,6 +16,8 @@ class Tensor {
         // empty constructor
 		Tensor();
 
+		//~Tensor();
+
 		//User specify a height and width and dimension; Initialize ZEROS in matrix
 		Tensor(int h,int w,int dimension,int f, std::string n);
 

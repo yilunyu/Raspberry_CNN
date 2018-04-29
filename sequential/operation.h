@@ -23,7 +23,7 @@ class Operation{
 
 		Tensor get_output();
 
-		double* apply_function();
+		void apply_function();
 
 	protected:
 		std::string name;
@@ -55,7 +55,7 @@ class FC : public Operation
 	public:
 		// FC(Tensor in,std::string op_name,std::string out_name);
 		// FC(std::vector<Tensor> in,std::string op_name,std::string out_name);
-        FC(Tensor tens,int num_output,
+        FC(std::vector<Tensor> & tens,
         std::string op_name,
         std::string out_name);
 		void apply_function();
@@ -65,9 +65,18 @@ class FC : public Operation
 class Pooling : public Operation
 {
 	public:
-		// Pooling(Tensor in,std::string op_name,std::string out_name);
-		// Pooling(std::vector<Tensor> in,std::string op_name,std::string out_name);
+		//Pooling(Tensor in,std::string op_name,std::string out_name);
+		Pooling(std::vector<Tensor> & in,std::string op_name,std::string out_name);
 		//default size and stride is 2 and 2
+		void apply_function();
+};
+
+class Flatten: public Operation
+{
+	public: 
+		Flatten(std::vector<Tensor> & tens, int num_output,
+        		std::string op_name,
+        		std::string out_name);
 		void apply_function();
 };
 
