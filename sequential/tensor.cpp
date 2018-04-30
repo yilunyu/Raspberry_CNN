@@ -1,6 +1,7 @@
 #include "tensor.h"
 #include <stdlib.h>
 #include <time.h>
+#include <iostream>
 
 Tensor::Tensor() {}
 
@@ -26,6 +27,14 @@ Tensor::Tensor(int h,int w,int dimension,int f, double* d,std::string n){
 //Tensor::~Tensor(){
 //	delete[] data;
 //}
+
+void Tensor::print_t(){
+	for(int i=0;i<height*width*dim*num_filter;i++)
+	{
+		std::cout<<data[i]<<' ';
+	}
+	std::cout<<'\n';
+}
 
 double* Tensor::get_data(){
 	return data;

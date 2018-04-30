@@ -117,7 +117,7 @@ FC::FC(std::vector<Tensor> & tens,
 
   //initialize b and w
 
-  Tensor t(weight_h,1,1,1,out_name);
+  Tensor t(1,weight_h,1,1,out_name);
   output = t;
 }
 
@@ -159,9 +159,9 @@ void FC::apply_function(){
   double* ori_data = original.get_data();
   double* weight_data = weights.get_data();
   double* out_data = output.get_data();
-
+  //std::cout<<"weight start "<<weight_data<<" [0]="<<weight_data[0]<<'\n';
   int weight_start = 0;
-  for(int i=0;i<weights.width;i++){
+  for(int i=0;i<weights.height;i++){
     double accum=0;
     for(int j=0;j<original.height*original.width*original.dim;j++){
       accum+=ori_data[j]*weight_data[j+weight_start];

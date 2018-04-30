@@ -17,7 +17,7 @@ class Tensor {
 		Tensor();
 
 		//~Tensor();
-
+		void print_t();
 		//User specify a height and width and dimension; Initialize ZEROS in matrix
 		Tensor(int h,int w,int dimension,int f, std::string n);
 
