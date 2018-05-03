@@ -248,6 +248,14 @@ void Flatten::apply_function()
   } 
 }
 
+Relu::Relu(Tensor original,std::string op_name,std::string out_name):Operation()
+{
+  inputs.push_back(original);
+  name = op_name;
+  Tensor t(original.height,original.width,original.dim,1,out_name);
+  output = t;
+}
+
 void Relu::apply_function()
 {
   Tensor original = inputs.at(0);
@@ -261,6 +269,14 @@ void Relu::apply_function()
       out_data[i] = ori_data[i];
     }
   }
+}
+
+Softmax::Softmax(Tensor original,std::string op_name,std::string out_name):Operation()
+{
+  inputs.push_back(original);
+  name = op_name;
+  Tensor t(original.height,original.width,original.dim,1,out_name);
+  output = t;
 }
 
 void Softmax::apply_function()

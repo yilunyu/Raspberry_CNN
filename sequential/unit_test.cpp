@@ -249,9 +249,58 @@ void test_pool(){
     outs.close();
   }
 }
+void test_softmax(){
+
+  std::ifstream ins("in_soft.txt");
+  std::ofstream outs("out_soft.txt");
+  std::string line;
+  double *data_1; //= new double[25];
+  int *dim_1 = new int[4];
+  //Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
+  int n_tests = 0;
+  std::string name_1 ("input_1");
+
+  if(ins.is_open() && outs.is_open()){
+    getline(ins,line);
+    n_tests = std::stoi(line);
+    for(int i =0;i<n_tests;i++){
+      getline(ins,line);
+      string_2_intarr(line,dim_1);
+      getline(ins,line);
+      int data_len = std::stoi(line);
+      data_1 = new double[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,data_1);
+      Tensor t_1 = Tensor(dim_1[0],dim_1[1],dim_1[2],dim_1[3],data_1,name_1);
+
+      Softmax soft(t_1,"soft_1","soft_1_out");
+      t_1.print_t();
+      soft.apply_function();
+      t_1.print_t();
+      Tensor soft_out = soft.get_output();
+      double* soft_data = soft_out.get_data();
+
+      
+      int soft_data_len = soft_out.dim*soft_out.height*soft_out.width*soft_out.num_filter;
+      for(int j=0;j<soft_data_len;j++){
+          //std::cout << pooling_data[j] <<' ';
+          outs << soft_data[j] <<' ';
+	  
+      }
+      outs<<'\n';
+      //std::cout <<'\n';
+
+      delete[] data_1;
+
+    }
+    ins.close();
+    outs.close();
+  }
+}
 int main(){
   //test_conv();
   //test_full();
-  test_pool();
+  //test_pool();
+  test_softmax();
   return 0;
 }

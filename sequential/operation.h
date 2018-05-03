@@ -91,7 +91,7 @@ class Flatten: public Operation
 class Relu : public Operation
 {
 	public:
-		// Relu(Tensor in,std::string op_name,std::string out_name);
+		Relu(Tensor in,std::string op_name,std::string out_name);
 		// Relu(std::vector<Tensor> in,std::string op_name,std::string out_name);
 		void apply_function();
 };
@@ -99,7 +99,7 @@ class Relu : public Operation
 class Linear : public Operation
 {
 	public:
-		// Linear(Tensor in,std::string op_name,std::string out_name);
+		Linear(Tensor in,std::string op_name,std::string out_name);
 		// Linear(std::vector<Tensor> in,std::string op_name,std::string out_name);
 		void apply_function();
 };
@@ -107,7 +107,7 @@ class Linear : public Operation
 class Softmax: public Operation
 {
 	public:
-		// Softmax(Tensor in,std::string op_name,std::string out_name);
+		Softmax(Tensor in,std::string op_name,std::string out_name);
 		// Softmax(std::vector<Tensor> in,std::string op_name,std::string out_name);
 		void apply_function();
 };
