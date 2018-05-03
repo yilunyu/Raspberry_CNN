@@ -232,7 +232,7 @@ void test_pool(){
       Tensor pooling_out = pooling.get_output();
       double* pooling_data = pooling_out.get_data();
 
-
+      
       int pooling_data_len = pooling_out.dim*pooling_out.height*pooling_out.width*pooling_out.num_filter;
       for(int j=0;j<pooling_data_len;j++){
           //std::cout << pooling_data[j] <<' ';
@@ -251,7 +251,7 @@ void test_pool(){
 }
 int main(){
   //test_conv();
-  test_full();
-  //test_pool();
+  //test_full();
+  test_pool();
   return 0;
 }

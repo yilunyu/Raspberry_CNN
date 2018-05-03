@@ -200,8 +200,9 @@ void Pooling::apply_function()
   for(int i=0;i<original.dim;i++){
 
     for(int j=0;j<h_bound;j+=2){
-      for(int k=0;k<w_bound;j+=2){
-        int cur_max = 0;
+      for(int k=0;k<w_bound;k+=2){
+	std::cout<<j<<' '<<k<<'\n';
+        int cur_max = -9999;
         if(ori_data[j*original.width+k+ori_start]>ori_data[j*original.width+k+ori_start+1])
         {
           cur_max =ori_data[j*original.width+k+ori_start];
