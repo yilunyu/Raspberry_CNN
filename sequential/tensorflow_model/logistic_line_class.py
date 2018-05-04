@@ -23,14 +23,24 @@ def saveWeight(filename,w,weightname):
             outstr=outstr+str(dim)+" "
         f.write(outstr[:-1]+'\n')
         w=np.reshape(w,[-1])
-        w = np.array2string(w,precision=3,separator=' ',suppress_small=True)
-        f.write(w[1:-1]+'\n')
+        w = np.array2string(w,precision=3,separator=" ",suppress_small=True)
+        f.write(w[2:-1]+'\n')
 
 def saveFC(filename,op,opname,depends):
     with open(filename,"ab") as f:
         depStr = " ".join(depends)
         f.write("Operation\n")
         f.write(op+" "+opname+" "+depStr+'\n')
+
+def saveInput(filename,inputname,dims):
+    with open(filename,"ab") as f:
+        f.write("Input\n")
+        f.write(inputname+'\n')
+        outstr = ""
+        for dim in dims:
+            outstr=outstr+str(dim)+" "
+        f.write(outstr[:-1])
+        f.write('\n')
 
 # Parameters
 learning_rate = 0.01
@@ -47,8 +57,9 @@ W = tf.Variable(tf.zeros([768, 3]))
 b = tf.Variable(tf.zeros([3]))
 
 # Construct model
-pred = tf.nn.softmax(tf.matmul(x, W) + b) # Softmax
-
+#pred = tf.nn.softmax(tf.matmul(x, W) + b) # Softmax
+pred_temp = tf.matmul(x,W)+b
+pred = tf.nn.softmax(pred_temp)
 #pred = tf.Print(pred,[pred])
 
 # Minimize error using cross entropy
@@ -88,10 +99,10 @@ with tf.Session() as sess:
     test_ys = ys[234:,:]
     xs = xs[:234,:]
     ys = ys[:234,:]
-    print(xs.shape)
+    #print(xs.shape)
     #print(xs[0])
-    print(ys)
-    print(test_ys)
+    #print(ys)
+    #print(test_ys)
     # Training cycle
     for epoch in range(training_epochs):
         avg_cost = 0.
@@ -121,9 +132,13 @@ with tf.Session() as sess:
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     print("Accuracy:", accuracy.eval({x: test_xs, y: test_ys}))
     #print("W= ",sess.run(tf.transpose(W)))
+    saveInput("test_file",'x',[1,768])
     saveWeight("test_file",sess.run(tf.transpose(W)),'W') 
     saveWeight("test_file",sess.run(b),'b') 
-    saveFC("test_file","FC","FC_out",['W','b'])
+    saveFC("test_file","FC","FC_out",['x','W','b'])
     #saver = tf.train.Saver()
     #saver.save(sess, 'my_test_model',global_step=1000)
-
+    test_arr = np.zeros([1,768])
+    for i in range(768):
+        test_arr[0,i] = i%6-2
+    print(pred_temp.eval({x:test_arr}))

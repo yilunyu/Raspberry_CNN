@@ -10,7 +10,7 @@
 class Operation{
 
 	public:
-        Operation();
+        	Operation();
         //input tensors,
 		//function of this operation,
 		//operation name,
@@ -23,10 +23,12 @@ class Operation{
 
 		Tensor get_output();
 
-		void apply_function();
+		virtual void apply_function(){
+			//std::cout<<"wrong\n";
+		};
+		std::string name;
 
 	protected:
-		std::string name;
 
 		//list of tensors
 		std::vector<Tensor> inputs;
@@ -55,9 +57,9 @@ class FC : public Operation
 	public:
 		// FC(Tensor in,std::string op_name,std::string out_name);
 		// FC(std::vector<Tensor> in,std::string op_name,std::string out_name);
-        FC(std::vector<Tensor> & tens,
-        std::string op_name,
-        std::string out_name);
+        	FC(std::vector<Tensor> & tens,
+        		std::string op_name,
+        		std::string out_name);
 		void apply_function();
 		void mul();
 };
@@ -74,7 +76,7 @@ class Pooling : public Operation
 class Flatten: public Operation
 {
 	public: 
-		Flatten(std::vector<Tensor> & tens, int num_output,
+		Flatten(std::vector<Tensor> & tens, 
         		std::string op_name,
         		std::string out_name);
 		void apply_function();
@@ -92,7 +94,7 @@ class Relu : public Operation
 {
 	public:
 		Relu(Tensor in,std::string op_name,std::string out_name);
-		// Relu(std::vector<Tensor> in,std::string op_name,std::string out_name);
+		//Relu(std::vector<Tensor> in,std::string op_name,std::string out_name);
 		void apply_function();
 };
 
@@ -100,7 +102,7 @@ class Linear : public Operation
 {
 	public:
 		Linear(Tensor in,std::string op_name,std::string out_name);
-		// Linear(std::vector<Tensor> in,std::string op_name,std::string out_name);
+		//Linear(std::vector<Tensor> in,std::string op_name,std::string out_name);
 		void apply_function();
 };
 
@@ -108,7 +110,7 @@ class Softmax: public Operation
 {
 	public:
 		Softmax(Tensor in,std::string op_name,std::string out_name);
-		// Softmax(std::vector<Tensor> in,std::string op_name,std::string out_name);
+		//Softmax(std::vector<Tensor> in,std::string op_name,std::string out_name);
 		void apply_function();
 };
 

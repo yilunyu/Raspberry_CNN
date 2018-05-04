@@ -20,9 +20,6 @@ Tensor Operation::get_output(){
   return output;
 }
 
-void Operation::apply_function(){
-  //return NULL;
-}
 
 
 double convolve_1d(double* original_start,double* filter_start,int original_width,int filter_len){
@@ -154,12 +151,10 @@ void FC::apply_function(){
   Tensor bias = inputs.at(2);
   Tensor weights = inputs.at(1);
   Tensor original = inputs.at(0);
-
   double* bias_data = bias.get_data();
   double* ori_data = original.get_data();
   double* weight_data = weights.get_data();
   double* out_data = output.get_data();
-  //std::cout<<"weight start "<<weight_data<<" [0]="<<weight_data[0]<<'\n';
   int weight_start = 0;
   for(int i=0;i<weights.height;i++){
     double accum=0;
@@ -226,8 +221,7 @@ void Pooling::apply_function()
   }
 }
 
-Flatten::Flatten(std::vector<Tensor> & tens, int num_output,
-        std::string op_name,
+Flatten::Flatten(std::vector<Tensor> & tens,std::string op_name,
         std::string out_name):Operation(){
   name = op_name;
   inputs = tens;
@@ -255,7 +249,16 @@ Relu::Relu(Tensor original,std::string op_name,std::string out_name):Operation()
   Tensor t(original.height,original.width,original.dim,1,out_name);
   output = t;
 }
-
+/*
+Relu::Relu(std::vector<Tensor> original,std::string op_name,std::string out_name):Operation()
+{
+  inputs = original;
+  name = op_name;
+  original = original.at(0);
+  Tensor t(original.height,original.width,original.dim,1,out_name);
+  output = t;
+}
+*/
 void Relu::apply_function()
 {
   Tensor original = inputs.at(0);
@@ -278,7 +281,16 @@ Softmax::Softmax(Tensor original,std::string op_name,std::string out_name):Opera
   Tensor t(original.height,original.width,original.dim,1,out_name);
   output = t;
 }
-
+/*
+Softmax::Softmax(std::vector<Tensor> original,std::string op_name,std::string out_name):Operation()
+{
+  inputs = original;
+  name = op_name;
+  original = original.at(0);
+  Tensor t(original.height,original.width,original.dim,1,out_name);
+  output = t;
+}
+*/
 void Softmax::apply_function()
 {
   Tensor original = inputs.at(0);

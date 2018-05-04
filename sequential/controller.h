@@ -9,17 +9,22 @@
 #include "tensor.h"
 
 class Controller{
-	std::vector<Operation> ops;
+	std::vector<Operation*> ops;
 	std::unordered_map<std::string,Tensor> map;
 
 	Tensor output;
 	public:
 		Controller(Tensor in);
+		
+		Controller();
+
+		Controller(std::vector<Tensor> inputs);
 		//Controller(Tensor,Operation*,int);
+		void add_tensor(Tensor t);
 
 		Tensor get_tensor(std::string n);
 
-		void add_op(Operation op);
+		void add_op(Operation *op);
 
 		//Operation Name, a previously existing tensor name used as input
 		// void add_op(std::string,std::string);

@@ -16,7 +16,7 @@ void string_2_intarr(std::string line,int* output){
   while(ss.good()){
     std::string sub;
     getline(ss,sub,' ');
-    output[cnt] = std::stof(sub);
+    output[cnt] = std::stoi(sub);
     cnt++;
   }
 }
