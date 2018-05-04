@@ -11,3 +11,5 @@ b
 0.001  0.002 -0.001
 Operation
 FC FC_out x W b
+Operation
+Softmax Softmax_out FC_out

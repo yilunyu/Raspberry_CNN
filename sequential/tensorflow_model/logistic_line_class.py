@@ -26,7 +26,7 @@ def saveWeight(filename,w,weightname):
         w = np.array2string(w,precision=3,separator=" ",suppress_small=True)
         f.write(w[2:-1]+'\n')
 
-def saveFC(filename,op,opname,depends):
+def saveOP(filename,op,opname,depends):
     with open(filename,"ab") as f:
         depStr = " ".join(depends)
         f.write("Operation\n")
@@ -135,10 +135,11 @@ with tf.Session() as sess:
     saveInput("test_file",'x',[1,768])
     saveWeight("test_file",sess.run(tf.transpose(W)),'W') 
     saveWeight("test_file",sess.run(b),'b') 
-    saveFC("test_file","FC","FC_out",['x','W','b'])
+    saveOP("test_file","FC","FC_out",['x','W','b'])
+    saveOP("test_file","Softmax","Softmax_out",['FC_out'])
     #saver = tf.train.Saver()
     #saver.save(sess, 'my_test_model',global_step=1000)
     test_arr = np.zeros([1,768])
     for i in range(768):
         test_arr[0,i] = i%6-2
-    print(pred_temp.eval({x:test_arr}))
+    print(pred.eval({x:test_arr}))

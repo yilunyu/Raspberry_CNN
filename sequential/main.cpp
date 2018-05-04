@@ -138,7 +138,7 @@ int main(){
   //std::cout<<t3.height<<' '<<t3.width<<' '<<t3.num_filter*t3.dim<<'\n';
   
   controller->forward_pass();
-  Tensor output = controller->get_tensor(std::string("FC_out"));
+  Tensor output = controller->get_tensor(std::string("Softmax_out"));
   output.print_t(); 
   return 0;
 }
