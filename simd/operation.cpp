@@ -163,14 +163,18 @@ void FC::apply_function(){
   for(int i=0;i<weights.height;i++){
     float32x4_t accumx4=vmovq_n_f32(0.0f);
     int j;
-    for(j=0;j<original.height*original.width*original.dim;j+=4){
-      // accum+=ori_data[j]*weight_data[j+weight_start];
+    int leftover = original.height*original.width*original.dim%4;
+    int limit = original.height*original.width*original.dim-leftover;
+    for(j=0;j<limit;j+=4){
       float32x4_t in1 = vld1q_f32(&ori_data[j]);
       float32x4_t in2 = vld1q_f32(&weight_data[weight_start+j]);
       accumx4 = vmlaq_f32(accumx4,in1,in2);
     }
-    //out_data[i] = vaddvq_f32(accumx4)+bias_data[i];
     out_data[i] = accumx4[0]+accumx4[1]+accumx4[2]+accumx4[3]+bias_data[i];
+    for(j=limit;j<limit+leftover;j++){
+      out_data[i]+=ori_data[j]*weight_data[weight_start+j];
+    }
+    
     weight_start+=original.height*original.width*original.dim;
   }
 
@@ -273,7 +277,18 @@ void Relu::apply_function()
   Tensor original = inputs.at(0);
   ne10_float32_t *ori_data = original.get_data(),
   *out_data = output.get_data();
-  for(int i=0;i<original.width*original.height*original.dim;i++){
+
+  float32x4_t mask_0 = vmovq_n_f32(0.0f);
+  int leftover = original.height*original.width*original.dim%4;
+  int limit = original.height*original.width*original.dim-leftover;
+  int i;
+  for(i=0;i<limit;i+=4){
+    float32x4_t in1 = vld1q_f32(&ori_data[i]);
+    uint32x4_t mask = vcltq_f32(mask_0,mask_0);
+    float32x4_t v = vbslq_f32(mask,in1,mask_0);
+    vst1q_f32(&out_data[i],v);
+  }
+  for(i=limit;i<limit+leftover;i++){
     if(ori_data[i]<0){
       out_data[i] = 0;
     }
@@ -306,22 +321,44 @@ void Softmax::apply_function()
   ne10_float32_t *ori_data = original.get_data(),
   *out_data = output.get_data();
   ne10_float32_t max = -99999;
-  for(int i=0;i<original.width*original.height*original.dim;i++)
+  int i;
+  int leftover = original.height*original.width*original.dim%4;
+  int limit = original.height*original.width*original.dim-leftover;
+  for(i=0;i<limit;i+=4)
   {
-    if(ori_data[i]>max)
+    float32x4_t in1 = vld1q_f32(&ori_data[i]);
+    float32x2_t max_2 = vpmax_f32(vget_low_f32(in1),vget_high_f32(in1));
+    float32x2_t max_1 = vpmax_f32(max_2,max_2);
+    float maxValue = vget_lane_f32(max_1,0);
+    if(maxValue>max)
     {
+      max = maxValue;
+    }
+  }
+  for(i=limit;i<limit+leftover;i++){
+    if(ori_data[i]>max){
       max = ori_data[i];
     }
   }
+
+
   ne10_float32_t sum = 0.;
-  for(int i=0;i<original.width*original.height*original.dim;i++)
+  for(i=0;i<original.width*original.height*original.dim;i++)
   {
     out_data[i] = exp(ori_data[i]-max);
     sum+=out_data[i];
   }
-  for(int i=0;i<original.width*original.height*original.dim;i++)
+  
+  sum = 1.0f/sum;
+  for(i=0;i<limit;i+=4)
   {
-    out_data[i] /=sum;
+    float32x4_t in1 = vld1q_f32(&out_data[i]);
+    float32x4_t ans = vmulq_n_f32(in1,(float32_t)sum);
+    vst1q_f32(&out_data[i],ans);
   }
+  for(i=limit;i<limit+leftover;i++){
+    out_data[i]*=sum;
+  }
+
   return;
 }
