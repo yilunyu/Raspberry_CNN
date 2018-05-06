@@ -298,9 +298,9 @@ void test_softmax(){
   }
 }
 int main(){
-  //test_conv();
+  test_conv();
   //test_full();
   //test_pool();
-  test_softmax();
+  //test_softmax();
   return 0;
 }

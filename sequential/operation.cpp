@@ -42,7 +42,7 @@ Convolution::Convolution(std::vector<Tensor> & tens,
   Tensor weights = inputs.at(1);
   int w_bound = original.width-weights.width+1;
   int h_bound = original.height-weights.height+1;
-  Tensor t(h_bound,w_bound,original.dim,1,out_name);
+  Tensor t(h_bound,w_bound,weights.num_filter,1,out_name);
   output = t;
 }
 

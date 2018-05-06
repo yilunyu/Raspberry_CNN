@@ -22,14 +22,36 @@ Tensor Operation::get_output(){
 
 
 
-ne10_float32_t convolve_1d(ne10_float32_t* original_start,ne10_float32_t* filter_start,int original_width,int filter_len){
-  ne10_float32_t accum=0;
-  for(int i=0;i<filter_len;i++){
-    for(int j=0;j<filter_len;j++){
-      accum+=*(original_start+i*original_width+j)*(*(filter_start+i*filter_len+j));
-    }
+inline void convolve_1d(ne10_float32_t* out, ne10_float32_t* ori_data,
+                            ne10_float32_t filter_val,int len){
+  //float32x4_t accumx4=vmovq_n_f32(0.0f);
+  int j;
+  int leftover = len%4;
+  int limit = len-leftover;
+  float32x4_t filter_val_vec = vld1q_dup_f32(&filter_val);
+  for(j=0;j<limit;j+=4){
+    float32x4_t in1 = vld1q_f32(&ori_data[j]);
+    float32x4_t out_old = vld1q_f32(&out[j]);
+    // float32x4_t tmp = vmulq_n_f32(in1,filter_val);
+    float32x4_t tmp = vmlaq_f32(out_old,filter_val_vec,in1);
+    vst1q_f32(&out[j],tmp);
   }
-  return accum;
+  for(j=limit;j<limit+leftover;j++){
+    out[j]+=ori_data[j]*filter_val;
+  }
+    
+}
+
+//w_len is number of multiplications needed per row
+//source_width is source image's width
+inline void convolve_2d(ne10_float32_t* out,ne10_float32_t* ori_start,
+                         ne10_float32_t filter_val, int h_len,int w_len,int source_width)
+{
+  int row_start =0;
+  for(int i=0;i<h_len;i++){
+    convolve_1d(&out[i*w_len],&ori_start[row_start],filter_val,w_len);
+    row_start+=source_width;
+  }
 }
 
 // Convolution::Convolution
@@ -42,7 +64,7 @@ Convolution::Convolution(std::vector<Tensor> & tens,
   Tensor weights = inputs.at(1);
   int w_bound = original.width-weights.width+1;
   int h_bound = original.height-weights.height+1;
-  Tensor t(h_bound,w_bound,original.dim,1,out_name);
+  Tensor t(h_bound,w_bound,weights.num_filter,1,out_name);
   output = t;
 }
 
@@ -76,18 +98,12 @@ void Convolution::apply_function(){
   for(int i=0;i<num_filters;i++){
     int d_ori_start = 0;
     for(int j=0;j<original.dim;j++){
-      for(int k=0;k<h_bound;k++){
-        for(int l=0;l<w_bound;l++){
-          out_data[i*h_bound*w_bound+k*w_bound+l]+=
-          convolve_1d(&ori_data[d_ori_start+k*original.width+l],
-                      &weight_data[filter_start+j*weights.height*weights.width],
-                     original.width,
-                      weights.width);
-          //std::cout << k <<' '<<l<<'\n';
-          //std::cout<<out_data[i*h_bound*w_bound+k*w_bound+l]<<
-          //    ' '<<i*h_bound*w_bound+k*w_bound+l<<' '<<ans<<'\n';
+      for(int k=0;k<weights.height;k++){
+        for(int l=0;l<weights.width;l++){
+          convolve_2d(&out_data[i*h_bound*w_bound],&ori_data[d_ori_start+k*original.width+l],
+                      weight_data[filter_start+j*weights.height*weights.width+k*weights.width+l], 
+                         h_bound,w_bound,original.width);
         }
-        //out_data[i*h_bound*w_bound+j*w_bound+k]+=bias_data[i];
       }
       d_ori_start+=original.width*original.height;
     }
@@ -117,7 +133,7 @@ FC::FC(std::vector<Tensor> & tens,
   Tensor t(1,weight_h,1,1,out_name);
   output = t;
 }
-
+/*
 void FC::mul(){
   Tensor weights = inputs.at(1);
   Tensor original = inputs.at(0);
@@ -146,7 +162,7 @@ void FC::mul(){
 
   return;
 }
-
+*/
 void FC::apply_function(){
   #ifdef __aarch64__ 
   std::cout<<'yes\n';

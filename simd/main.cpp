@@ -27,6 +27,65 @@ void string_2_doublearr(std::string line,ne10_float32_t* output){
   }
 }
 
+void test_conv(){
+  std::ifstream ins("in_conv.txt");
+  std::ofstream outs("out_conv.txt");
+  std::string line;
+  ne10_float32_t *data_1; //= new double[25];
+  ne10_float32_t *w_1;
+  int *dim1 = new int[4];
+  int *dim2 = new int[4];
+  //Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
+  int n_tests = 0;
+  std::string name_1 ("input_1");
+  std::string name_w1 ("w_1");
+  if(ins.is_open() && outs.is_open()){
+    getline(ins,line);
+    n_tests = std::stoi(line);
+    for(int i =0;i<n_tests;i++){
+      getline(ins,line);
+      string_2_intarr(line,dim1);
+      getline(ins,line);
+      int data_len = std::stoi(line);
+      data_1 = new ne10_float32_t[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,data_1);
+
+      getline(ins,line);
+      string_2_intarr(line,dim2);
+      getline(ins,line);
+      data_len = std::stoi(line);
+      w_1 = new ne10_float32_t[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,w_1);
+      Tensor t_1 = Tensor(dim1[0],dim1[1],dim1[2],dim1[3],data_1,name_1);
+      Tensor t_w1 = Tensor(dim2[0],dim2[1],dim2[2],dim2[3],w_1,name_w1);
+      std::vector<Tensor> tens;
+      tens.push_back(t_1);
+      tens.push_back(t_w1);
+      Convolution conv(tens,"conv_1","conv_1_out");
+      conv.apply_function();
+      Tensor conv_out = conv.get_output();
+      ne10_float32_t* conv_data = conv_out.get_data();
+
+
+      int conv_data_len = conv_out.dim*conv_out.height*conv_out.width*conv_out.num_filter;
+      for(int j=0;j<conv_data_len;j++){
+          //std::cout << conv_data[j] <<' ';
+          outs << conv_data[j] <<' ';
+      }
+      //std::cout <<'\n';
+      outs <<'\n';
+
+      delete[] data_1;
+      delete[] w_1;
+
+    }
+    ins.close();
+    outs.close();
+  }
+}
+
 void test_pool(){
 
   std::ifstream ins("in_pool.txt");
@@ -201,6 +260,7 @@ void test_softmax(){
 int main(){
   //test_full();
   // test_softmax();
-  test_pool();
+  // test_pool();
+  test_conv();
   return 0;
 }
