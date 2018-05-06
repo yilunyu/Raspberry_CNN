@@ -27,6 +27,56 @@ void string_2_doublearr(std::string line,ne10_float32_t* output){
   }
 }
 
+void test_pool(){
+
+  std::ifstream ins("in_pool.txt");
+  std::ofstream outs("out_pool.txt");
+  std::string line;
+  ne10_float32_t *data_1; //= new double[25];
+  int *dim_1 = new int[4];
+  //Tensor in_1 = Tensor(5,5,1,1,data_1,name_1);
+  int n_tests = 0;
+  std::string name_1 ("input_1");
+
+  if(ins.is_open() && outs.is_open()){
+    getline(ins,line);
+    n_tests = std::stoi(line);
+    for(int i =0;i<n_tests;i++){
+      getline(ins,line);
+      string_2_intarr(line,dim_1);
+      getline(ins,line);
+      int data_len = std::stoi(line);
+      data_1 = new ne10_float32_t[data_len];
+      getline(ins,line);
+      string_2_doublearr(line,data_1);
+      Tensor t_1 = Tensor(dim_1[0],dim_1[1],dim_1[2],dim_1[3],data_1,name_1);
+
+      
+      std::vector<Tensor> tens;
+      tens.push_back(t_1);
+      Pooling pooling(tens,"pool_1","pool_1_out");
+      pooling.apply_function();
+      Tensor pooling_out = pooling.get_output();
+      ne10_float32_t* pooling_data = pooling_out.get_data();
+
+      
+      int pooling_data_len = pooling_out.dim*pooling_out.height*pooling_out.width*pooling_out.num_filter;
+      for(int j=0;j<pooling_data_len;j++){
+          //std::cout << pooling_data[j] <<' ';
+          outs << pooling_data[j] <<' ';
+    
+      }
+      outs<<'\n';
+      //std::cout <<'\n';
+
+      delete[] data_1;
+
+    }
+    ins.close();
+    outs.close();
+  }
+}
+
 void test_full(){
   std::ifstream ins("in_fc.txt");
   std::ofstream outs("out_fc.txt");
@@ -150,6 +200,7 @@ void test_softmax(){
 
 int main(){
   //test_full();
-  test_softmax();
+  // test_softmax();
+  test_pool();
   return 0;
 }

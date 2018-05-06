@@ -199,36 +199,24 @@ void Pooling::apply_function()
   Tensor original = inputs.at(0);
   ne10_float32_t *ori_data = original.get_data();
   ne10_float32_t *out_data = output.get_data();
-    int ori_start = 0;
-    int h_bound = original.height-original.height%2;
-    int w_bound = original.width-original.width%2;
-    int out_width = w_bound/2;
-    int out_height = h_bound/2;
+  int ori_start = 0;
+  int h_bound = original.height-original.height%2;
+  int w_bound = original.width-original.width%2;
+  int out_width = w_bound/2;
+  int out_height = h_bound/2;
 
   for(int i=0;i<original.dim;i++){
 
     for(int j=0;j<h_bound;j+=2){
       for(int k=0;k<w_bound;k+=2){
-	std::cout<<j<<' '<<k<<'\n';
         ne10_int32_t cur_max = -9999;
-        if(ori_data[j*original.width+k+ori_start]>ori_data[j*original.width+k+ori_start+1])
-        {
-          cur_max =ori_data[j*original.width+k+ori_start];
-        }
-        else
-        {
-          cur_max =ori_data[j*original.width+k+ori_start+1];
-        }
-        if(ori_data[(j+1)*original.width+k+ori_start]>cur_max)
-        {
-          cur_max =ori_data[(j+1)*original.width+k+ori_start];
-        }
-        if(ori_data[(j+1)*original.width+k+1+ori_start]>cur_max)
-        {
-          cur_max =ori_data[(j+1)*original.width+k+1+ori_start];
-        }
-        out_data[i*out_width*out_height+j/2*out_width+k/2] = cur_max;
-      }
+        float32x2_t in1 = vld1_f32(&ori_data[j*original.width+k+ori_start]);
+        float32x2_t in2 = vld1_f32(&ori_data[(j+1)*original.width+k+ori_start]);
+        float32x2_t m1 = vpmax_f32(in1,in2);
+        float32x2_t m2 = vpmax_f32(m1,m1);
+        float maxValue = vget_lane_f32(m2,0);
+        out_data[i*out_width*out_height+j/2*out_width+k/2] = maxValue;
+      }  
     }
     ori_start+=original.height*original.width;
   }
