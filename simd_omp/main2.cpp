@@ -7,6 +7,7 @@
 #include "controller.h"
 #include <unordered_map>
 #include <assert.h>
+#include <omp.h>
 #include <sys/time.h>
 
 typedef unsigned long long timestamp_t;
@@ -19,7 +20,6 @@ get_timestamp ()
   return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;
 }
 
-
 void string_2_intarr(std::string line,int* output){
   std::stringstream ss (line);
   int cnt = 0;
@@ -30,7 +30,7 @@ void string_2_intarr(std::string line,int* output){
     cnt++;
   }
 }
-void string_2_doublearr(std::string line,double* output){
+void string_2_doublearr(std::string line,float* output){
   std::stringstream ss (line);
   int cnt = 0;
   while(ss.good()){
@@ -53,79 +53,79 @@ Controller* load_network(std::string filename){
     while(getline(ins,line)){
       if(line.compare("Weight")==0){
         std::string id;
-    	getline(ins,id);
-	for(int i=0;i<4;i++)
-	{
-	  dim[i] = 1.;
-	}
-	getline(ins,line);
-	string_2_intarr(line,dim);
-	double *data = new double[dim[0]*dim[1]*dim[2]*dim[3]];
-	getline(ins,line);
-	string_2_doublearr(line,data);
-	Tensor t = Tensor(dim[0],dim[1],dim[2],dim[3],data,id);
-	controller->add_tensor(t);
+      getline(ins,id);
+  for(int i=0;i<4;i++)
+  {
+    dim[i] = 1.;
+  }
+  getline(ins,line);
+  string_2_intarr(line,dim);
+  float *data = new float[dim[0]*dim[1]*dim[2]*dim[3]];
+  getline(ins,line);
+  string_2_doublearr(line,data);
+  Tensor t = Tensor(dim[0],dim[1],dim[2],dim[3],data,id);
+  controller->add_tensor(t);
       }
       else if(line.compare("Input")==0){
         std::string id;
-    	getline(ins,id);
-	for(int i=0;i<4;i++)
-	{
-	  dim[i] = 1.;
-	}
-	getline(ins,line);
-	string_2_intarr(line,dim);
-	Tensor t = Tensor(dim[0],dim[1],dim[2],dim[3],id);
-      	controller->add_tensor(t);
+      getline(ins,id);
+  for(int i=0;i<4;i++)
+  {
+    dim[i] = 1.;
+  }
+  getline(ins,line);
+  string_2_intarr(line,dim);
+  Tensor t = Tensor(dim[0],dim[1],dim[2],dim[3],id);
+        controller->add_tensor(t);
       }
       else{
-	getline(ins,line);
-  	std::stringstream ss (line);
-	std::string op_type;
-	getline(ss,op_type,' ');
-	std::string op_output;
-	getline(ss,op_output,' ');
-	if(op_type.compare("Softmax")==0 || op_type.compare("Relu")==0){
-	  std::string sub;
-	  getline(ss,sub,' ');
-	  Tensor curr = controller->get_tensor(sub);
-	  if(op_type.compare("Softmax")==0){
-	    Softmax *softmax = new Softmax(curr,"Soft_1",op_output);
-	    controller->add_op(softmax);
-	  }
-	  else{
-	    Relu* relu = new Relu(curr,"Relu_1",op_output);
-	    controller->add_op(relu);
-	  }
-	  continue;
-	}
-	std::vector<Tensor> inputs;
-	while(ss.good()){
-    	  std::string sub;
-    	  getline(ss,sub,' ');
-  	  Tensor curr = controller->get_tensor(sub);
-	  inputs.push_back(curr);
-	}
-	if(op_type.compare("FC")==0){
-	  FC *fc = new FC(inputs,"FC_1",op_output);
-	  controller->add_op(fc);
-	}
-	else if(op_type.compare("Convolution")==0){
-	  Convolution *convolution = new Convolution(inputs,"Conv_1",op_output);
-	  controller->add_op(convolution);
-	}
-	else if(op_type.compare("Pooling")==0){
-	  Pooling *pooling = new Pooling(inputs,"Pool_1",op_output);
-	  controller->add_op(pooling);
-	}
-	else if(op_type.compare("Flatten")==0){
-	  Flatten *flatten = new Flatten(inputs,"Flatten_1",op_output);
-	  controller->add_op(flatten);
-	}
-	else{
-	  std::cerr<<"Operation does not exist\n";
-	  assert(false);
-	}
+  getline(ins,line);
+    std::stringstream ss (line);
+  std::string op_type;
+  getline(ss,op_type,' ');
+  std::string op_output;
+  getline(ss,op_output,' ');
+  if(op_type.compare("Softmax")==0 || op_type.compare("Relu")==0){
+    std::string sub;
+    getline(ss,sub,' ');
+    Tensor curr = controller->get_tensor(sub);
+    if(op_type.compare("Softmax")==0){
+      Softmax *softmax = new Softmax(curr,"Soft_1",op_output);
+      controller->add_op(softmax);
+    }
+    else{
+      Relu* relu = new Relu(curr,"Relu_1",op_output);
+      controller->add_op(relu);
+    }
+    continue;
+  }
+  std::vector<Tensor> inputs;
+  while(ss.good()){
+        std::string sub;
+        getline(ss,sub,' ');
+      Tensor curr = controller->get_tensor(sub);
+    inputs.push_back(curr);
+  }
+  if(op_type.compare("FC")==0){
+    FC *fc = new FC(inputs,"FC_1",op_output);
+    controller->add_op(fc);
+  }
+  else if(op_type.compare("Convolution")==0){
+    Convolution *convolution = new Convolution(inputs,"Conv_1",op_output);
+    controller->add_op(convolution);
+  }
+  else if(op_type.compare("Pooling")==0){
+    Pooling *pooling = new Pooling(inputs,"Pool_1",op_output);
+    controller->add_op(pooling);
+  }
+  else if(op_type.compare("Flatten")==0){
+    Flatten *flatten = new Flatten(inputs,"Flatten_1",op_output);
+    controller->add_op(flatten);
+  }
+  else{
+    std::cerr<<"Operation does not exist\n";
+    assert(false);
+  }
       }
     }
   }
@@ -133,11 +133,13 @@ Controller* load_network(std::string filename){
 }
 
 int main(){
+  omp_set_num_threads(4);
   std::string filename("../sequential/tensorflow_model/conv_test");
   Controller* controller = load_network(filename);
   
   Tensor t = controller->get_tensor(std::string("x"));
-  double* t_data = t.get_data();
+  
+  float* t_data = t.get_data();
   //std::cout<<t.width*t.height*t.dim*t.num_filter<<'\n';
   for(int i=0;i<t.width*t.height*t.dim*t.num_filter;i++)
   {
@@ -157,9 +159,10 @@ int main(){
   {
     controller->forward_pass();
   }
+  
   time1= get_timestamp();
   timestamp_t seconds = time1 -time0;
-  fprintf(stderr, "Sequential Time: %lld\n", seconds);
+  fprintf(stderr, "Parallel Time:   %lld\n", seconds);
   Tensor output = controller->get_tensor(std::string("Conv_out"));
   std::cout<<output.height<<' '<<output.width<<'\n';
   //output.print_t(); 

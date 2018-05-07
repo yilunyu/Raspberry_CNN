@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <arm_neon.h>
+#include <omp.h>
 
 Operation::Operation(std::vector<Tensor> & tens,
                       std::string op_name,
@@ -29,6 +30,7 @@ inline void convolve_1d(ne10_float32_t* out, ne10_float32_t* ori_data,
   int limit = len-leftover;
   float32x4_t filter_val_vec = vld1q_dup_f32(&filter_val);
   for(j=0;j<limit;j+=4){
+   
     float32x4_t in1 = vld1q_f32(&ori_data[j]);
     float32x4_t out_old = vld1q_f32(&out[j]);
     float32x4_t tmp = vmlaq_f32(out_old,filter_val_vec,in1);
@@ -46,6 +48,7 @@ inline void convolve_2d(ne10_float32_t* out,ne10_float32_t* ori_start,
                          ne10_float32_t filter_val, int h_len,int w_len,int source_width)
 {
   int row_start =0;
+  #pragma omp parallel for
   for(int i=0;i<h_len;i++){
     convolve_1d(&out[i*w_len],&ori_start[row_start],filter_val,w_len);
     row_start+=source_width;
@@ -68,7 +71,7 @@ Convolution::Convolution(std::vector<Tensor> & tens,
 
 //supports "VALID", stride is 1
 void Convolution::apply_function(){
- 
+
   Tensor weights = inputs.at(1);
   Tensor original = inputs.at(0);
 
@@ -83,6 +86,7 @@ void Convolution::apply_function(){
 
   for(int i=0;i<num_filters;i++){
     for(int j=0;j<h_bound;j++){
+      // #pragma omp parallel for
       for(int k=0;k<w_bound;k++){
         out_data[i*h_bound*w_bound+j*w_bound+k] = 0.;
       }
@@ -138,12 +142,14 @@ void FC::apply_function(){
     int j;
     int leftover = original.height*original.width*original.dim%4;
     int limit = original.height*original.width*original.dim-leftover;
+    #pragma omp parallel for
     for(j=0;j<limit;j+=4){
       float32x4_t in1 = vld1q_f32(&ori_data[j]);
       float32x4_t in2 = vld1q_f32(&weight_data[weight_start+j]);
       accumx4 = vmlaq_f32(accumx4,in1,in2);
     }
     out_data[i] = accumx4[0]+accumx4[1]+accumx4[2]+accumx4[3]+bias_data[i];
+    #pragma omp parallel for
     for(j=limit;j<limit+leftover;j++){
       out_data[i]+=ori_data[j]*weight_data[weight_start+j];
     }
@@ -177,12 +183,11 @@ void Pooling::apply_function()
   int w_bound = original.width-original.width%2;
   int out_width = w_bound/2;
   int out_height = h_bound/2;
-
   for(int i=0;i<original.dim;i++){
 
     for(int j=0;j<h_bound;j+=2){
+      #pragma omp parallel for
       for(int k=0;k<w_bound;k+=2){
-        // ne10_int32_t cur_max = -9999;
         float32x2_t in1 = vld1_f32(&ori_data[j*original.width+k+ori_start]);
         float32x2_t in2 = vld1_f32(&ori_data[(j+1)*original.width+k+ori_start]);
         float32x2_t m1 = vpmax_f32(in1,in2);
@@ -240,6 +245,7 @@ void Relu::apply_function()
     float32x4_t v = vbslq_f32(mask,in1,mask_0);
     vst1q_f32(&out_data[i],v);
   }
+
   for(i=limit;i<limit+leftover;i++){
     if(ori_data[i]<0){
       out_data[i] = 0;
@@ -260,22 +266,37 @@ Softmax::Softmax(Tensor original,std::string op_name,std::string out_name):Opera
 
 void Softmax::apply_function()
 {
+  int nthreads =omp_get_max_threads();
   Tensor original = inputs.at(0);
   ne10_float32_t *ori_data = original.get_data(),
   *out_data = output.get_data();
-  ne10_float32_t max = -99999;
+  ne10_float32_t maxes[nthreads];
   int i;
   int leftover = original.height*original.width*original.dim%4;
   int limit = original.height*original.width*original.dim-leftover;
+  #pragma omp parallel for
+  for(i=0;i<nthreads;i++)
+  {
+    maxes[i]= ori_data[0];
+  }
+
+  #pragma omp parallel for
   for(i=0;i<limit;i+=4)
   {
+    int t = omp_get_thread_num();
     float32x4_t in1 = vld1q_f32(&ori_data[i]);
     float32x2_t max_2 = vpmax_f32(vget_low_f32(in1),vget_high_f32(in1));
     float32x2_t max_1 = vpmax_f32(max_2,max_2);
     float maxValue = vget_lane_f32(max_1,0);
-    if(maxValue>max)
+    if(maxValue>maxes[t])
     {
-      max = maxValue;
+      maxes[t] = maxValue;
+    }
+  }
+  ne10_float32_t max=maxes[0];
+  for(i=0;i<nthreads;i++){
+    if(maxes[i]>max){
+      max = maxes[i];
     }
   }
   for(i=limit;i<limit+leftover;i++){
@@ -285,14 +306,28 @@ void Softmax::apply_function()
   }
 
 
-  ne10_float32_t sum = 0.;
+  ne10_float32_t sums[nthreads];
+  #pragma omp parallel for
+  for(i=0;i<nthreads;i++)
+  {
+    sums[i]= 0.0f;
+  }
+
+  #pragma omp parallel for
   for(i=0;i<original.width*original.height*original.dim;i++)
   {
+    int t = omp_get_thread_num();
     out_data[i] = exp(ori_data[i]-max);
-    sum+=out_data[i];
+    sums[t]+=out_data[i];
   }
-  
+  ne10_float32_t sum=0.0f;
+  for(i=0;i<nthreads;i++)
+  {
+    sum+=sums[i];
+  }
   sum = 1.0f/sum;
+
+  #pragma omp parallel for
   for(i=0;i<limit;i+=4)
   {
     float32x4_t in1 = vld1q_f32(&out_data[i]);

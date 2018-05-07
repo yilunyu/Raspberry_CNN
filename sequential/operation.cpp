@@ -123,7 +123,6 @@ void FC::mul(){
   Tensor original = inputs.at(0);
   double* ori_data = original.get_data();
   double* weight_data = weights.get_data();
-  double* out_data = output.get_data();
   for(int j=0;j<original.height;j++){
     for(int k=0;k<weights.width;k++){
       int ori_dim_start = 0;

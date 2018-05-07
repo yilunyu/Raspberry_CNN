@@ -42,7 +42,7 @@ void Controller::forward_pass(){
 Tensor Controller::get_tensor(std::string n){
 	std::unordered_map<std::string,Tensor>::const_iterator res = map.find(n);
 	if(res==map.end()){
-		std::cout<<"cannot find key in map\n";
+		std::cerr<<"cannot find key in map\n";
 		assert(false);
 	}
 	else{
